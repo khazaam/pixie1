@@ -1,36 +1,52 @@
 const canvas = document.getElementById('mycanvas');
 
+            const app = new PIXI.Application({
+                view: canvas,
+                width: window.innerWidth, 
+                height: window.innerHeight
+            });
 
-const app = new PIXI.Application({
-    view: canvas,
-    width: window.innerWidth,
-    height: window.innerHeight,
+            console.log(PIXI.utils.TextureCache);
 
-});
+            let loader = PIXI.Loader.shared;
 
-console.log(PIXI.utils.TextureCache);
-let loader = new PIXI.loader();
-loader.onComplete.add(handleLoadComplete);
-loader.add("alien.png");
+            loader.add("alienpicture", "alien.png")
+                .add("alienback", "background.png")
+                .on("progress", handleLoadProgress)
+                .on("load", handleLoadAsset)
+                .on("error", handleLoadError)
+                .load(handleLoadComplete);
 
-let kuva;
+            let kuva;
 
-function handleLoadComplete(){
+            function handleLoadProgress(loader, resource) {
+                console.log(loader.progress + "% loaded");
+            }
 
-    let texture = loader.resource["alien.png"].texture;
-    kuva = new PIXI.Sprite(texture);
-    kuva.anchor.x = 0.5;
-    kuva.anchor.y = 0.5;
-    app.stage.addChild(kuva);
+            function handleLoadAsset(loader, resource) {
+                console.log("asset loaded " + resource.name);
+            }
 
-    app.ticker.add(animate);
-}
+            function handleLoadError() {
+                console.error("load error");
+            }
 
-function animate() {
-    kuva.x = app.renderer.screen.width / 2;
-    kuva.y = app.renderer.screen.height / 2;
-    kuva.rotation += 0.1;
-}
+            function handleLoadComplete() {
+                let texture = loader.resources.alienpicture.texture;
+                kuva = new PIXI.Sprite(texture);
+                kuva.anchor.x = 0.5;
+                kuva.anchor.y = 0.5;
+                app.stage.addChild(kuva);
 
+                app.ticker.add(animate);
 
+                setTimeout(() => {
+                    kuva.texture = loader.resources.alienback.texture;
+                }, 2000);
+            }
 
+            function animate() {
+                kuva.x = app.renderer.screen.width / 2;
+                kuva.y = app.renderer.screen.height / 2;
+                kuva.rotation += 0.1;
+            }
